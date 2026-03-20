@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Photo Gallery</title>
+    <meta
+      name="description"
+      content="An immersive 3D photo gallery showcasing professional photography"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles/main.css" />
+  </head>
+  <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h1 class="loading-title">3D Photo Gallery</h1>
+        <p class="loading-text">Loading your photos...</p>
+        <div class="loading-progress">
+          <div class="loading-bar">
+            <div id="loading-progress-bar" class="loading-bar-fill"></div>
+          </div>
+          <span id="loading-percentage" class="loading-percentage">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Gallery Container -->
+    <div id="gallery-container" class="gallery-container">
+      <canvas id="gallery-canvas" class="gallery-canvas"></canvas>
+
+      <!-- UI Overlay -->
+      <div id="ui-overlay" class="ui-overlay">
+        <!-- Photo Info Panel -->
+        <div id="photo-info" class="photo-info hidden">
+          <div class="photo-info-content">
+            <h3 id="photo-title" class="photo-title"></h3>
+            <p id="photo-description" class="photo-description"></p>
+            <div class="photo-metadata">
+              <span id="photo-date" class="photo-date"></span>
+              <span id="photo-dimensions" class="photo-dimensions"></span>
+            </div>
+          </div>
+          <button
+            id="close-photo"
+            class="close-photo-btn"
+            aria-label="Close photo view"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Controls -->
+        <div id="gallery-controls" class="gallery-controls">
+          <button id="reset-view" class="control-btn" title="Reset camera view">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
+              ></path>
+              <path d="M21 3v5h-5"></path>
+              <path
+                d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
+              ></path>
+              <path d="M3 21v-5h5"></path>
+            </svg>
+          </button>
+
+          <button
+            id="shuffle-photos"
+            class="control-btn"
+            title="Shuffle photo positions"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M16 3h5v5"></path>
+              <path d="M4 20L21 3"></path>
+              <path d="M21 16v5h-5"></path>
+              <path d="M15 15l6 6"></path>
+              <path d="M4 4l5 5"></path>
+            </svg>
+          </button>
+
+          <button
+            id="dim-lights"
+            class="control-btn"
+            title="Toggle dim lighting"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+
+          <button id="fullscreen" class="control-btn" title="Toggle fullscreen">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="error-message" class="error-message hidden">
+      <div class="error-content">
+        <h2>Oops! Something went wrong</h2>
+        <p id="error-text">
+          Failed to load the 3D gallery. Please check your browser
+          compatibility.
+        </p>
+        <button id="retry-btn" class="retry-btn">Try Again</button>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

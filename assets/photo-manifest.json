@@ -1,0 +1,151 @@
+{
+  "version": "1.0",
+  "generated": "2026-03-13T18:27:03.176Z",
+  "count": 8,
+  "photos": [
+    {
+      "id": "photo_1_DSCF0068",
+      "path": "./assets/photos/DSCF0068.JPEG",
+      "metadata": {
+        "title": "DSCF0068",
+        "description": "Professional photograph: DSCF0068",
+        "date": "2026-03-13",
+        "camera": "Unknown",
+        "settings": {
+          "aperture": "Unknown",
+          "shutter": "Unknown",
+          "iso": "Unknown"
+        },
+        "tags": [
+          "photography"
+        ]
+      }
+    },
+    {
+      "id": "photo_2_DSCF0138",
+      "path": "./assets/photos/DSCF0138.jpg",
+      "metadata": {
+        "title": "DSCF0138",
+        "description": "Professional photograph: DSCF0138",
+        "date": "2026-03-13",
+        "camera": "Unknown",
+        "settings": {
+          "aperture": "Unknown",
+          "shutter": "Unknown",
+          "iso": "Unknown"
+        },
+        "tags": [
+          "photography"
+        ]
+      }
+    },
+    {
+      "id": "photo_3_DSCF0147",
+      "path": "./assets/photos/DSCF0147.jpg",
+      "metadata": {
+        "title": "DSCF0147",
+        "description": "Professional photograph: DSCF0147",
+        "date": "2026-03-13",
+        "camera": "Unknown",
+        "settings": {
+          "aperture": "Unknown",
+          "shutter": "Unknown",
+          "iso": "Unknown"
+        },
+        "tags": [
+          "photography"
+        ]
+      }
+    },
+    {
+      "id": "photo_4_DSCF0729",
+      "path": "./assets/photos/DSCF0729.JPEG",
+      "metadata": {
+        "title": "DSCF0729",
+        "description": "Professional photograph: DSCF0729",
+        "date": "2026-03-13",
+        "camera": "Unknown",
+        "settings": {
+          "aperture": "Unknown",
+          "shutter": "Unknown",
+          "iso": "Unknown"
+        },
+        "tags": [
+          "photography"
+        ]
+      }
+    },
+    {
+      "id": "photo_5_DSCF0748",
+      "path": "./assets/photos/DSCF0748.jpg",
+      "metadata": {
+        "title": "DSCF0748",
+        "description": "Professional photograph: DSCF0748",
+        "date": "2026-03-13",
+        "camera": "Unknown",
+        "settings": {
+          "aperture": "Unknown",
+          "shutter": "Unknown",
+          "iso": "Unknown"
+        },
+        "tags": [
+          "photography"
+        ]
+      }
+    },
+    {
+      "id": "photo_6_DSCF0779",
+      "path": "./assets/photos/DSCF0779.JPEG",
+      "metadata": {
+        "title": "DSCF0779",
+        "description": "Professional photograph: DSCF0779",
+        "date": "2026-03-13",
+        "camera": "Unknown",
+        "settings": {
+          "aperture": "Unknown",
+          "shutter": "Unknown",
+          "iso": "Unknown"
+        },
+        "tags": [
+          "photography"
+        ]
+      }
+    },
+    {
+      "id": "photo_7_DSCF0787",
+      "path": "./assets/photos/DSCF0787.JPEG",
+      "metadata": {
+        "title": "DSCF0787",
+        "description": "Professional photograph: DSCF0787",
+        "date": "2026-03-13",
+        "camera": "Unknown",
+        "settings": {
+          "aperture": "Unknown",
+          "shutter": "Unknown",
+          "iso": "Unknown"
+        },
+        "tags": [
+          "photography"
+        ]
+      }
+    },
+    {
+      "id": "photo_8_DSCF0788",
+      "path": "./assets/photos/DSCF0788.jpg",
+      "metadata": {
+        "title": "DSCF0788",
+        "description": "Professional photograph: DSCF0788",
+        "date": "2026-03-13",
+        "camera": "Unknown",
+        "settings": {
+          "aperture": "Unknown",
+          "shutter": "Unknown",
+          "iso": "Unknown"
+        },
+        "tags": [
+          "photography"
+        ]
+      }
+    }
+  ]
+}
