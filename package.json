@@ -1,8 +1,8 @@
 {
-  "name": "3d-photo-gallery",
+  "name": "gallery",
   "version": "1.0.0",
   "type": "module",
-  "description": "A beautiful 3D photo gallery with interactive photo manipulation",
+  "description": "A beautiful gallery with interactive photo manipulation",
   "main": "src/main.js",
   "scripts": {
     "dev": "vite",

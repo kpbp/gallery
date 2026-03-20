@@ -4,7 +4,7 @@ import { LoadingManager } from "./ui/LoadingManager.js";
 
 /**
  * Main application entry point
- * Initializes the 3D photo gallery with error handling and loading states
+ * Initializes the gallery with error handling and loading states
  */
 class Main {
   constructor() {
@@ -42,7 +42,7 @@ class Main {
       // Set up window event listeners
       this.setupEventListeners();
 
-      console.log("3D Photo Gallery initialized successfully");
+      console.log("Gallery initialized successfully");
     } catch (error) {
       console.error("Failed to initialize gallery:", error);
       this.errorHandler.show(error.message);

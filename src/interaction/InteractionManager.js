@@ -197,10 +197,13 @@ export class InteractionManager extends EventEmitter {
   onTouchEnd(event) {
     if (this.isTouch) {
       const touchDuration = Date.now() - this.touchStartTime;
+      const isTap = !this.touchMoved && touchDuration < 500;
 
       if (this.isDragging) {
         this.endDragging();
-      } else if (!this.touchMoved && touchDuration < 500) {
+      }
+
+      if (isTap) {
         // Handle tap as click
         const intersects = this.getIntersectedPhotos();
 

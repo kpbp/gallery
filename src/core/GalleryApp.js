@@ -9,7 +9,7 @@ import { EventEmitter } from "../utils/EventEmitter.js";
 
 /**
  * Main Gallery Application Class
- * Orchestrates all components of the 3D photo gallery
+ * Orchestrates all components of the gallery
  */
 export class GalleryApp extends EventEmitter {
   constructor() {
