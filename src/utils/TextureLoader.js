@@ -58,9 +58,11 @@ export class TextureLoader {
    * @returns {Promise<THREE.Texture>}
    */
   loadTextureFile(path) {
+    const base = import.meta.env.BASE_URL || "./";
+    const resolvedPath = path.replace(/^\.\//, base);
     return new Promise((resolve, reject) => {
       this.loader.load(
-        path,
+        resolvedPath,
         (texture) => resolve(texture),
         (progress) => {
           // Optional: handle loading progress

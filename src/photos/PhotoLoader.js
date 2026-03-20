@@ -29,7 +29,8 @@ export class PhotoLoader {
 
   async loadFromManifest() {
     try {
-      const response = await fetch("./assets/photo-manifest.json");
+      const base = import.meta.env.BASE_URL || "./";
+      const response = await fetch(`${base}assets/photo-manifest.json`);
       if (!response.ok) {
         throw new Error("Manifest not found");
       }
@@ -85,8 +86,10 @@ export class PhotoLoader {
 
   async loadSinglePhoto(photoInfo) {
     return new Promise((resolve, reject) => {
+      const base = import.meta.env.BASE_URL || "./";
+      const path = photoInfo.path.replace(/^\.\//, base);
       this.textureLoader.load(
-        photoInfo.path,
+        path,
         (texture) => {
           // Configure texture
           texture.wrapS = THREE.ClampToEdgeWrapping;
