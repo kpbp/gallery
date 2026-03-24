@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import * as CANNON from "cannon-es";
 import { textureLoader } from "../utils/TextureLoader.js";
 
 /**
@@ -772,6 +773,54 @@ export class GalleryRoom {
       minY: 0,
       maxY: this.dimensions.height,
     };
+  }
+
+  createPhysicsBodies() {
+    const { width, depth } = this.dimensions;
+    const bodies = [];
+
+    // Floor plane — CANNON.Plane default normal is +Z, rotate to face +Y
+    const floorBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
+    floorBody.quaternion.setFromAxisAngle(
+      new CANNON.Vec3(1, 0, 0),
+      -Math.PI / 2,
+    );
+    bodies.push(floorBody);
+
+    // Back wall at z = -depth/2, default +Z normal is correct (faces into room)
+    const backWall = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
+    backWall.position.set(0, 0, -depth / 2);
+    bodies.push(backWall);
+
+    // Front wall at z = depth/2, facing -Z
+    const frontWall = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
+    frontWall.position.set(0, 0, depth / 2);
+    frontWall.quaternion.setFromAxisAngle(
+      new CANNON.Vec3(0, 1, 0),
+      Math.PI,
+    );
+    bodies.push(frontWall);
+
+    // Left wall at x = -width/2, facing +X
+    const leftWall = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
+    leftWall.position.set(-width / 2, 0, 0);
+    leftWall.quaternion.setFromAxisAngle(
+      new CANNON.Vec3(0, 1, 0),
+      Math.PI / 2,
+    );
+    bodies.push(leftWall);
+
+    // Right wall at x = width/2, facing -X
+    const rightWall = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
+    rightWall.position.set(width / 2, 0, 0);
+    rightWall.quaternion.setFromAxisAngle(
+      new CANNON.Vec3(0, 1, 0),
+      -Math.PI / 2,
+    );
+    bodies.push(rightWall);
+
+    this.physicsBodies = bodies;
+    return bodies;
   }
 
   dispose() {

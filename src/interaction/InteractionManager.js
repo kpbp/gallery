@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import * as CANNON from "cannon-es";
 import { EventEmitter } from "../utils/EventEmitter.js";
 
 /**
@@ -35,6 +36,14 @@ export class InteractionManager extends EventEmitter {
     this.isTouch = false;
     this.touchStartTime = 0;
     this.touchMoved = false;
+
+    // Physics
+    this.physicsWorld = null;
+    this.dragLiftY = 0;
+    this.dragVelocityTracker = {
+      positions: [],
+      maxSamples: 5,
+    };
 
     // Performance optimization
     this.lastRaycastTime = 0;
@@ -228,8 +237,20 @@ export class InteractionManager extends EventEmitter {
     // Calculate offset from photo center to click point
     this.dragOffset.copy(intersectionPoint).sub(photoMesh.mesh.position);
 
-    // Set drag plane at table height
-    this.dragPlane.constant = -photoMesh.mesh.position.y;
+    // Lift the photo slightly above current Y so it clears other photos
+    this.dragLiftY = photoMesh.mesh.position.y + 0.02;
+    this.dragPlane.constant = -this.dragLiftY;
+
+    // Switch physics body to kinematic for direct position control
+    const body = photoMesh.physicsBody;
+    if (body) {
+      body.type = CANNON.Body.KINEMATIC;
+      body.velocity.setZero();
+      body.angularVelocity.setZero();
+    }
+
+    // Reset velocity tracker
+    this.dragVelocityTracker.positions = [];
 
     // Start drag on photo mesh
     photoMesh.startDrag();
@@ -252,29 +273,58 @@ export class InteractionManager extends EventEmitter {
     if (this.raycaster.ray.intersectPlane(this.dragPlane, intersectionPoint)) {
       // Apply offset and update position
       const newPosition = intersectionPoint.sub(this.dragOffset);
+      newPosition.y = this.dragLiftY;
 
-      // Constrain to table bounds if available
-      if (this.draggedPhoto.tableBounds) {
-        const bounds = this.draggedPhoto.tableBounds;
-        newPosition.x = THREE.MathUtils.clamp(
-          newPosition.x,
-          bounds.minX,
-          bounds.maxX,
-        );
-        newPosition.z = THREE.MathUtils.clamp(
-          newPosition.z,
-          bounds.minZ,
-          bounds.maxZ,
-        );
-        newPosition.y = bounds.y;
+      // Update physics body position (kinematic — pushes other dynamic bodies)
+      const body = this.draggedPhoto.physicsBody;
+      if (body) {
+        body.position.set(newPosition.x, newPosition.y, newPosition.z);
       }
 
+      // Also update mesh directly for immediate visual feedback
       this.draggedPhoto.mesh.position.copy(newPosition);
+
+      // Track position for velocity calculation
+      const tracker = this.dragVelocityTracker;
+      tracker.positions.push({
+        x: newPosition.x,
+        y: newPosition.y,
+        z: newPosition.z,
+        time: performance.now(),
+      });
+      if (tracker.positions.length > tracker.maxSamples) {
+        tracker.positions.shift();
+      }
     }
   }
 
   endDragging() {
     if (this.isDragging && this.draggedPhoto) {
+      const body = this.draggedPhoto.physicsBody;
+      if (body) {
+        // Calculate release velocity from tracked positions
+        const velocity = this.calculateReleaseVelocity();
+
+        // Switch back to dynamic
+        body.type = CANNON.Body.DYNAMIC;
+        body.wakeUp();
+
+        // Apply velocity (flick/toss)
+        body.velocity.set(velocity.x, velocity.y, velocity.z);
+
+        // Add slight angular velocity for realism
+        const speed = Math.sqrt(
+          velocity.x * velocity.x + velocity.z * velocity.z,
+        );
+        if (speed > 0.5) {
+          body.angularVelocity.set(
+            (Math.random() - 0.5) * speed * 0.5,
+            0,
+            (Math.random() - 0.5) * speed * 0.5,
+          );
+        }
+      }
+
       // End drag on photo mesh
       this.draggedPhoto.endDrag();
 
@@ -288,6 +338,32 @@ export class InteractionManager extends EventEmitter {
       this.draggedPhoto = null;
       this.isDragging = false;
     }
+  }
+
+  calculateReleaseVelocity() {
+    const samples = this.dragVelocityTracker.positions;
+    if (samples.length < 2) return { x: 0, y: 0, z: 0 };
+
+    const recent = samples[samples.length - 1];
+    const older = samples[0];
+    const dt = (recent.time - older.time) / 1000;
+
+    if (dt < 0.001) return { x: 0, y: 0, z: 0 };
+
+    let vx = (recent.x - older.x) / dt;
+    const vy = 0; // Let gravity handle vertical
+    let vz = (recent.z - older.z) / dt;
+
+    // Clamp maximum velocity to prevent photos from flying through walls
+    const maxSpeed = 10;
+    const speed = Math.sqrt(vx * vx + vz * vz);
+    if (speed > maxSpeed) {
+      const scale = maxSpeed / speed;
+      vx *= scale;
+      vz *= scale;
+    }
+
+    return { x: vx, y: vy, z: vz };
   }
 
   updateHover() {
@@ -336,6 +412,10 @@ export class InteractionManager extends EventEmitter {
   // Set PhotoManager reference
   setPhotoManager(photoManager) {
     this.photoManager = photoManager;
+  }
+
+  setPhysicsWorld(physicsWorld) {
+    this.physicsWorld = physicsWorld;
   }
 
   onKeyDown(event) {

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import * as CANNON from "cannon-es";
 import { EventEmitter } from "../utils/EventEmitter.js";
 import { PhotoLoader } from "./PhotoLoader.js";
 import { PhotoMesh } from "./PhotoMesh.js";
@@ -32,6 +33,9 @@ export class PhotoManager extends EventEmitter {
 
     // Camera reference (will be set by GalleryApp)
     this.camera = null;
+
+    // Physics world reference (will be set by GalleryApp)
+    this.physicsWorld = null;
   }
 
   async init() {
@@ -72,6 +76,10 @@ export class PhotoManager extends EventEmitter {
     this.photoMeshes.forEach((photoMesh) => {
       photoMesh.setCamera(camera);
     });
+  }
+
+  setPhysicsWorld(physicsWorld) {
+    this.physicsWorld = physicsWorld;
   }
 
   createSamplePhotos() {
@@ -211,7 +219,11 @@ export class PhotoManager extends EventEmitter {
       this.photoMeshes.push(photoMesh);
       this.photosGroup.add(photoMesh.mesh);
 
-      // No need for event listeners since we handle selection directly
+      // Create physics body if physics world available
+      if (this.physicsWorld) {
+        const body = photoMesh.createPhysicsBody();
+        this.physicsWorld.addBody(body, photoMesh.mesh);
+      }
     });
   }
 
@@ -230,6 +242,21 @@ export class PhotoManager extends EventEmitter {
       if (positions[index]) {
         const position = positions[index].position || positions[index];
         photoMesh.setPosition(position);
+
+        // Sync physics body position
+        if (photoMesh.physicsBody) {
+          photoMesh.physicsBody.position.set(
+            position.x,
+            position.y,
+            position.z,
+          );
+          photoMesh.physicsBody.quaternion.set(
+            photoMesh.mesh.quaternion.x,
+            photoMesh.mesh.quaternion.y,
+            photoMesh.mesh.quaternion.z,
+            photoMesh.mesh.quaternion.w,
+          );
+        }
       }
     });
   }
@@ -284,7 +311,38 @@ export class PhotoManager extends EventEmitter {
     this.photoMeshes.forEach((photoMesh, index) => {
       if (positions[index]) {
         const position = positions[index].position || positions[index];
+
+        // Temporarily make kinematic during animation
+        if (photoMesh.physicsBody) {
+          photoMesh.physicsBody.type = CANNON.Body.KINEMATIC;
+          photoMesh.physicsBody.velocity.setZero();
+          photoMesh.physicsBody.angularVelocity.setZero();
+        }
+
         photoMesh.animateToPosition(position, 1500);
+
+        // Restore dynamic after animation completes
+        if (photoMesh.physicsBody) {
+          setTimeout(() => {
+            if (!photoMesh.isSelected && photoMesh.physicsBody) {
+              photoMesh.physicsBody.position.set(
+                photoMesh.mesh.position.x,
+                photoMesh.mesh.position.y,
+                photoMesh.mesh.position.z,
+              );
+              photoMesh.physicsBody.quaternion.set(
+                photoMesh.mesh.quaternion.x,
+                photoMesh.mesh.quaternion.y,
+                photoMesh.mesh.quaternion.z,
+                photoMesh.mesh.quaternion.w,
+              );
+              photoMesh.physicsBody.type = CANNON.Body.DYNAMIC;
+              photoMesh.physicsBody.velocity.setZero();
+              photoMesh.physicsBody.angularVelocity.setZero();
+              photoMesh.physicsBody.wakeUp();
+            }
+          }, 1600);
+        }
       }
     });
 

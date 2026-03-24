@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { InteractionManager } from "../interaction/InteractionManager.js";
 import { PhotoManager } from "../photos/PhotoManager.js";
+import { PhysicsWorld } from "../physics/PhysicsWorld.js";
 import { PostProcessing } from "./PostProcessing.js";
 import { SceneManager } from "../scene/SceneManager.js";
 import { UIManager } from "../ui/UIManager.js";
@@ -70,6 +71,15 @@ export class GalleryApp extends EventEmitter {
 
       this.emit("loadProgress", 30);
 
+      // Initialize physics world and register environment bodies
+      this.physicsWorld = new PhysicsWorld();
+
+      const tableBody = this.sceneManager.marbleTable.createPhysicsBody();
+      this.physicsWorld.addBody(tableBody, null);
+
+      const roomBodies = this.sceneManager.galleryRoom.createPhysicsBodies();
+      roomBodies.forEach((body) => this.physicsWorld.addBody(body, null));
+
       // Set table bounds for photo manager
       const tableBounds = this.sceneManager.getTableBounds();
       if (tableBounds) {
@@ -83,7 +93,11 @@ export class GalleryApp extends EventEmitter {
       // Connect InteractionManager with PhotoManager
       this.interactionManager.setPhotoManager(this.photoManager);
 
-      // Load and initialize photos
+      // Pass physics world to managers
+      this.photoManager.setPhysicsWorld(this.physicsWorld);
+      this.interactionManager.setPhysicsWorld(this.physicsWorld);
+
+      // Load and initialize photos (creates physics bodies too)
       await this.photoManager.init();
       this.emit("loadProgress", 70);
 
@@ -266,6 +280,11 @@ export class GalleryApp extends EventEmitter {
       this.controls.update();
     }
 
+    // Step physics simulation
+    if (this.physicsWorld) {
+      this.physicsWorld.step(deltaTime);
+    }
+
     // Update managers
     if (this.photoManager) {
       this.photoManager.update(deltaTime);
@@ -444,6 +463,10 @@ export class GalleryApp extends EventEmitter {
 
     if (this.interactionManager) {
       this.interactionManager.dispose();
+    }
+
+    if (this.physicsWorld) {
+      this.physicsWorld.dispose();
     }
 
     if (this.postProcessing) {

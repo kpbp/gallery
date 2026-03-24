@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import * as CANNON from "cannon-es";
 import { EventEmitter } from "../utils/EventEmitter.js";
 
 /**
@@ -107,6 +108,38 @@ export class PhotoMesh extends EventEmitter {
     this.originalRotation.z = Math.PI + randomRotation;
   }
 
+  createPhysicsBody() {
+    const { width, height } = this.mesh.geometry.parameters;
+    // Thicker collision shape than visual (0.01m) for stable resting contacts
+    const shape = new CANNON.Box(
+      new CANNON.Vec3(width / 2, height / 2, 0.005),
+    );
+
+    this.physicsBody = new CANNON.Body({
+      mass: 0.01,
+      shape,
+      linearDamping: 0.5,
+      angularDamping: 0.7,
+      sleepSpeedLimit: 0.5,
+      sleepTimeLimit: 0.1,
+    });
+
+    // Copy initial position and quaternion from mesh
+    this.physicsBody.position.set(
+      this.mesh.position.x,
+      this.mesh.position.y,
+      this.mesh.position.z,
+    );
+    this.physicsBody.quaternion.set(
+      this.mesh.quaternion.x,
+      this.mesh.quaternion.y,
+      this.mesh.quaternion.z,
+      this.mesh.quaternion.w,
+    );
+
+    return this.physicsBody;
+  }
+
   // Set camera reference for enhanced photo viewing
   setCamera(camera) {
     this.camera = camera;
@@ -155,6 +188,14 @@ export class PhotoMesh extends EventEmitter {
     if (this.isSelected) return;
 
     this.isSelected = true;
+
+    // Make kinematic so physics doesn't interfere with animation
+    if (this.physicsBody) {
+      this.physicsBody.type = CANNON.Body.KINEMATIC;
+      this.physicsBody.velocity.setZero();
+      this.physicsBody.angularVelocity.setZero();
+    }
+
     this.liftAndRotate();
     // Don't emit 'selected' here to avoid double selection
   }
@@ -164,6 +205,29 @@ export class PhotoMesh extends EventEmitter {
 
     this.isSelected = false;
     this.returnToTable();
+
+    // After animation completes, restore dynamic physics
+    if (this.physicsBody) {
+      setTimeout(() => {
+        if (!this.isSelected && this.physicsBody) {
+          this.physicsBody.position.set(
+            this.mesh.position.x,
+            this.mesh.position.y,
+            this.mesh.position.z,
+          );
+          this.physicsBody.quaternion.set(
+            this.mesh.quaternion.x,
+            this.mesh.quaternion.y,
+            this.mesh.quaternion.z,
+            this.mesh.quaternion.w,
+          );
+          this.physicsBody.type = CANNON.Body.DYNAMIC;
+          this.physicsBody.velocity.setZero();
+          this.physicsBody.angularVelocity.setZero();
+          this.physicsBody.wakeUp();
+        }
+      }, 1100);
+    }
     // Don't emit 'deselected' here to avoid conflicts
   }
 
@@ -318,9 +382,10 @@ export class PhotoMesh extends EventEmitter {
       }
     });
 
-    // Update original position and table position when dragging ends
+    // Update positions from current mesh state
     this.originalPosition.copy(this.mesh.position);
     this.tablePosition.copy(this.mesh.position);
+    this.originalRotation.set(this.mesh.rotation.x, this.mesh.rotation.y, this.mesh.rotation.z);
   }
 
   // LOD (Level of Detail) management
@@ -374,15 +439,20 @@ export class PhotoMesh extends EventEmitter {
       }
     }
 
-    // LOD distance checking could be added here
-    // if (camera) {
-    //     const distance = camera.position.distanceTo(this.mesh.position);
-    //     if (distance > this.visibilityDistance) {
-    //         this.mesh.visible = false;
-    //     } else {
-    //         this.mesh.visible = true;
-    //     }
-    // }
+    // Sync physics body position when selected (kinematic mode)
+    if (this.isSelected && this.physicsBody) {
+      this.physicsBody.position.set(
+        this.mesh.position.x,
+        this.mesh.position.y,
+        this.mesh.position.z,
+      );
+      this.physicsBody.quaternion.set(
+        this.mesh.quaternion.x,
+        this.mesh.quaternion.y,
+        this.mesh.quaternion.z,
+        this.mesh.quaternion.w,
+      );
+    }
   }
 
   // Get bounding box for collision detection

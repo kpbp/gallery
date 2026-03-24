@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import * as CANNON from "cannon-es";
 import { textureLoader } from "../utils/TextureLoader.js";
 
 /**
@@ -606,10 +607,17 @@ export class MarbleTable {
     );
   }
 
-  // Add subtle animation (optional)
-  update(deltaTime) {
-    // Could add subtle floating or breathing animation
-    // For now, keep static for realism
+  createPhysicsBody() {
+    const { width, depth, height } = this.dimensions;
+    const shape = new CANNON.Box(
+      new CANNON.Vec3(width / 2, height / 2, depth / 2),
+    );
+    this.physicsBody = new CANNON.Body({
+      mass: 0,
+      shape,
+      position: new CANNON.Vec3(0, this.tableTopSurfaceY - height / 2, 0),
+    });
+    return this.physicsBody;
   }
 
   dispose() {

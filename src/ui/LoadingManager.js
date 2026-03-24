@@ -12,12 +12,7 @@ export class LoadingManager {
     this.currentProgress = 0;
     this.isVisible = false;
 
-    this.messages = [
-      "Loading your photos...",
-      "Setting up the gallery...",
-      "Preparing the 3D environment...",
-      "Almost ready...",
-    ];
+    this.messages = ["Curating...", "Queuing..."];
   }
 
   show() {
